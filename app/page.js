@@ -5,6 +5,10 @@ import { processEvolutionData } from "../utils/pokemonData";
 
 // Component voor een enkele Pokémon in de evolutieboom
 const PokemonNode = ({ pokemon, onClick }) => {
+  const safeLowerCase = (str) => {
+    return str?.toLowerCase() || '';
+  };
+
   return (
     <div 
       onClick={() => onClick(pokemon)}
@@ -17,14 +21,14 @@ const PokemonNode = ({ pokemon, onClick }) => {
         height={120}
         className="object-contain"
       />
-      <h3 className="mt-2 font-bold text-lg">{pokemon.name}</h3>
+      <h3 className="mt-2 font-bold text-lg">{safeLowerCase(pokemon.name)}</h3>
       <div className="flex gap-2 mt-1">
         {pokemon.types.map((type) => (
           <span
             key={type}
-            className={`px-2 py-1 rounded text-sm text-white bg-${type.toLowerCase()}`}
+            className={`px-2 py-1 rounded text-sm text-white bg-${safeLowerCase(type)}`}
           >
-            {type}
+            {safeLowerCase(type)}
           </span>
         ))}
       </div>
