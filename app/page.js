@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { processEvolutionData } from "../utils/pokemonData";
 
 // Component voor een enkele Pokémon in de evolutieboom
 const PokemonNode = ({ pokemon, onClick }) => {
@@ -84,37 +85,46 @@ const EvolutionChain = ({ chain }) => {
 export default function Home() {
   const [pokemonData, setPokemonData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Hier zou je de data van de Kaggle dataset moeten laden
-    // Voor nu gebruiken we voorbeeld data
-    const mockData = [
-      [{
-        name: "Bulbasaur",
-        types: ["Grass", "Poison"],
-        stats: {
-          HP: 45,
-          Attack: 49,
-          Defense: 49,
-          "Sp. Attack": 65,
-          "Sp. Defense": 65,
-          Speed: 45
-        },
-        abilities: ["Overgrow", "Chlorophyll"],
-        imageUrl: "/pokemon/1.png"
-      }],
-      // Voeg hier meer evolutieketens toe
-    ];
+    const loadPokemonData = async () => {
+      try {
+        // Vervang dit pad door het juiste pad naar je CSV bestand
+        const response = await fetch('/api/pokemon');
+        if (!response.ok) throw new Error('Failed to fetch Pokemon data');
+        
+        const data = await response.json();
+        const evolutionChains = processEvolutionData(data);
+        setPokemonData(evolutionChains);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setPokemonData(mockData);
-    setLoading(false);
+    loadPokemonData();
   }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500 text-center">
+          <h2 className="text-2xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <h1 className="text-4xl font-bold text-center mb-12">Pokémon Evolution Tree</h1>
       {loading ? (
-        <div className="text-center">Laden...</div>
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
       ) : (
         <div className="space-y-16">
           {pokemonData.map((chain, index) => (
