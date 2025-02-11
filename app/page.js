@@ -92,49 +92,47 @@ export default function Home() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadPokemonData = async () => {
+    const fetchPokemon = async () => {
       try {
+        setLoading(true);
         const response = await fetch('/api/pokemon');
-        if (!response.ok) throw new Error('Kon Pokemon data niet laden');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const data = await response.json();
-        const evolutionChains = processEvolutionData(data);
-        setPokemonData(evolutionChains);
-      } catch (err) {
-        setError(err.message);
+        setPokemonData(data);
+      } catch (e) {
+        console.error('Error fetching pokemon:', e);
+        setError(e.message);
       } finally {
         setLoading(false);
       }
     };
 
-    loadPokemonData();
+    fetchPokemon();
   }, []);
 
+  if (loading) {
+    return <div>Laden...</div>;
+  }
+
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500 text-center">
-          <h2 className="text-2xl font-bold mb-2">Error</h2>
-          <p>{error}</p>
-        </div>
-      </div>
-    );
+    return <div>Error: {error}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <h1 className="text-4xl font-bold text-center mb-12">Pokémon Evolution Tree</h1>
-      {loading ? (
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="space-y-16">
-          {pokemonData.map((chain, index) => (
-            <EvolutionChain key={index} chain={chain} />
-          ))}
-        </div>
-      )}
-    </div>
+    <main className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Pokemon Lijst</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {pokemonData.map((pokemon, index) => (
+          <div key={index} className="border p-4 rounded-lg shadow">
+            <h2 className="text-xl font-semibold">{pokemon.name}</h2>
+            {/* Voeg hier meer Pokemon details toe */}
+          </div>
+        ))}
+      </div>
+    </main>
   );
 }

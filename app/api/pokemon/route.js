@@ -4,13 +4,14 @@ import fs from 'fs/promises';
 
 export async function GET() {
   try {
-    // Log het volledige pad voor debugging
+    // Log het volledige pad
     const dataPath = path.join(process.cwd(), 'public', 'pokemon.csv');
-    console.log('Probeer bestand te lezen van:', dataPath);
+    console.log('Volledig pad naar bestand:', dataPath);
 
     // Controleer of het bestand bestaat
     try {
       await fs.access(dataPath);
+      console.log('Bestand bestaat!');
     } catch (error) {
       console.error('Bestand bestaat niet:', error);
       return NextResponse.json(
@@ -19,34 +20,32 @@ export async function GET() {
       );
     }
 
-    // Lees het bestand
+    // Probeer het bestand te lezen en log de grootte
     const fileContent = await fs.readFile(dataPath, 'utf-8');
-    
+    console.log('Bestandsgrootte:', fileContent?.length || 0, 'karakters');
+    console.log('Eerste 100 karakters:', fileContent?.substring(0, 100));
+
     if (!fileContent) {
-      console.error('Leeg bestand gelezen');
+      console.error('Bestand is leeg');
       return NextResponse.json(
         { error: 'Pokemon data bestand is leeg' },
         { status: 500 }
       );
     }
 
-    // Parse de data
+    // Probeer de eerste regel te splitsen
+    const firstLine = fileContent.split('\n')[0];
+    console.log('Eerste regel:', firstLine);
+
     const pokemonData = parseCSV(fileContent);
-    
-    if (!pokemonData || pokemonData.length === 0) {
-      console.error('Geen Pokemon data geparsed');
-      return NextResponse.json(
-        { error: 'Kon Pokemon data niet verwerken' },
-        { status: 500 }
-      );
-    }
+    console.log('Aantal verwerkte Pokemon:', pokemonData.length);
 
     return NextResponse.json(pokemonData);
     
   } catch (error) {
-    console.error('API route error:', error);
+    console.error('Gedetailleerde error:', error);
     return NextResponse.json(
-      { error: 'Fout bij het laden van Pokemon data: ' + error.message },
+      { error: `Fout bij het laden van Pokemon data: ${error.message}` },
       { status: 500 }
     );
   }
