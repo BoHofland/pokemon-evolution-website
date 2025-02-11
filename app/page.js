@@ -90,9 +90,8 @@ export default function Home() {
   useEffect(() => {
     const loadPokemonData = async () => {
       try {
-        // Vervang dit pad door het juiste pad naar je CSV bestand
         const response = await fetch('/api/pokemon');
-        if (!response.ok) throw new Error('Failed to fetch Pokemon data');
+        if (!response.ok) throw new Error('Kon Pokemon data niet laden');
         
         const data = await response.json();
         const evolutionChains = processEvolutionData(data);

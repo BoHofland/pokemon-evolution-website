@@ -1,37 +1,37 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import { NextResponse } from 'next/server';
+import path from 'path';
+import fs from 'fs/promises';
 
 export async function GET() {
   try {
-    // Pas dit pad aan naar waar je CSV bestand staat
-    const dataPath = path.join(process.cwd(), 'data', 'pokemon.csv');
-    const fileContents = await fs.readFile(dataPath, 'utf8');
+    // Lees het CSV bestand uit de public directory
+    const dataPath = path.join(process.cwd(), 'public', 'pokemon.csv');
+    const fileContent = await fs.readFile(dataPath, 'utf-8');
     
-    // Simpele CSV parser (je kunt ook csv-parse gebruiken voor robuustere parsing
-    const rows = fileContents.split('\n').slice(1); // Skip header row
-    const pokemon = rows.map(row => {
-      const columns = row.split(',');
-      return {
-        pokedex_number: parseInt(columns[0]),
-        name: columns[1],
-        type: columns[2],
-        hp: parseInt(columns[3]),
-        attack: parseInt(columns[4]),
-        defense: parseInt(columns[5]),
-        sp_attack: parseInt(columns[6]),
-        sp_defense: parseInt(columns[7]),
-        speed: parseInt(columns[8]),
-        abilities: columns[9],
-        next_evolution: columns[10] || null
-      };
-    });
-
-    return NextResponse.json(pokemon);
+    // Converteer CSV naar JSON
+    const pokemonData = parseCSV(fileContent);
+    
+    return NextResponse.json(pokemonData);
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to load Pokemon data' },
+      { error: 'Fout bij het laden van Pokemon data' },
       { status: 500 }
     );
   }
+}
+
+// Helper functie om CSV te parsen
+function parseCSV(csvContent) {
+  // Implementeer hier je CSV parsing logica
+  // Dit is een voorbeeld; je moet dit aanpassen aan je specifieke CSV structuur
+  const lines = csvContent.split('\n');
+  const headers = lines[0].split(',');
+  
+  return lines.slice(1).map(line => {
+    const values = line.split(',');
+    return headers.reduce((obj, header, index) => {
+      obj[header.trim()] = values[index]?.trim();
+      return obj;
+    }, {});
+  });
 } 
